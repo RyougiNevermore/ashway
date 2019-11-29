@@ -231,5 +231,4 @@ func (ash *Ash) walkSlice(key string, s0 []interface{}) ([]interface{}, string, 
 
 var (
 	ErrTargetIdIsNotStringOrInt   = errors.New("target id is not string or int")
-	ErrBurnFailedCauseEmptySource = errors.New("burn failed, cause source json bytes is empty")
 )
