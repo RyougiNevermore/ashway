@@ -49,24 +49,29 @@ func userValidator(value string) (name string, ok bool) {
 	return
 }
 
-func userFetcher(id string) (value json.RawMessage, err error) {
+func userFetcher(name string, id string) (value json.RawMessage, err error) {
+
 	if id == "2" {
 		return
 	}
+
 	u := User{
 		Id:   id,
-		Name: fmt.Sprintf("name_%s", id),
+		Name: fmt.Sprintf("%s_%s", name, id),
 		Age:  11,
 		Day:  time.Now(),
 	}
-	value, err = json.Marshal(&u)
+
+	value, err = json.Marshal(u)
+
 	return
 }
 
 func TestNewAsh(t *testing.T) {
-	ash := ashway.NewAsh(userValidator)
-	ash.RegisterGetter("teacher", userFetcher)
-	ash.RegisterGetter("student", userFetcher)
+	ash := ashway.NewAsh(false, userValidator, userFetcher)
+	ash.SetAlarm(func(err error) {
+		t.Logf("warning %v", err)
+	})
 	course := Course{
 		Ident:      "sss",
 		Ids:        [][]string{{"sss"}},
@@ -79,7 +84,32 @@ func TestNewAsh(t *testing.T) {
 	}
 
 	srcp, _ := json.Marshal(&course)
+	t.Log(string(srcp))
+	out, err := ash.Burn(srcp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(string(out))
+}
 
+func TestNewAsh_Slice(t *testing.T) {
+	ash := ashway.NewAsh(true, userValidator, userFetcher)
+	ash.SetAlarm(func(err error) {
+		t.Logf("warning %v", err)
+	})
+	course := []Course{{
+		Ident:      "sss",
+		Ids:        [][]string{{"sss"}},
+		Id:         111,
+		Name:       "c1",
+		TeacherId:  123456,
+		StudentIds: []string{"1", "2", "3"},
+		Lessons:    []Lesson{{StudentId: "11", Name: "l11"}},
+		Lesson:     Lesson{StudentId: "11", Name: "l11"},
+	}}
+
+	srcp, _ := json.Marshal(&course)
+	t.Log(string(srcp))
 	out, err := ash.Burn(srcp)
 	if err != nil {
 		t.Fatal(err)
